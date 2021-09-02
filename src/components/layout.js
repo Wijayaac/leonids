@@ -118,26 +118,35 @@ const Layout = ({ location, title, children }) => {
         >
           {header}
           {isHome &&
-            lists.map(({ node }) => {
-              const title = node.frontmatter.title || node.fields.slug
-              return (
-                <Link
-                  style={{
-                    ...scale(0.4),
-                    marginBottom: 2,
-                    marginTop: 2,
-                    fontFamily: `Montserrat, sans-serif`,
-                    textAlign: "left",
-                  }}
-                  className="text-left "
-                  to={`${node.fields.slug}`}
-                  key={node.fields.slug}
-                  p
-                >
-                  {title}
-                </Link>
-              )
-            })}
+            lists
+              .filter(({ node }) => {
+                if (
+                  !node.fields.slug
+                    .toLowerCase()
+                    .includes(location.pathname.toLowerCase())
+                )
+                  return node
+              })
+              .map(({ node }) => {
+                const title = node.frontmatter.title || node.fields.slug
+                return (
+                  <Link
+                    style={{
+                      ...scale(0.4),
+                      marginBottom: 2,
+                      marginTop: 2,
+                      fontFamily: `Montserrat, sans-serif`,
+                      textAlign: "left",
+                    }}
+                    className="text-left "
+                    to={`${node.fields.slug}`}
+                    key={node.fields.slug}
+                    p
+                  >
+                    {title}
+                  </Link>
+                )
+              })}
         </div>
       </div>
 
