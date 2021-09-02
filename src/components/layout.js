@@ -8,7 +8,12 @@ import Footer from "./footer"
 import "./global.css"
 
 const Layout = ({ location, title, children }) => {
-  const isHome = location.href.length > 22
+  let isHome = true
+  if (typeof window !== undefined) {
+    // browser code
+    isHome = location.href > 22
+  }
+  console.log(isHome)
   const data = useStaticQuery(graphql`
     query blogListSidebarQuery {
       allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
@@ -117,7 +122,7 @@ const Layout = ({ location, title, children }) => {
           style={{ minHeight: 200 }}
         >
           {header}
-          {isHome &&
+          {!isHome &&
             lists
               .filter(({ node }) => {
                 if (
@@ -141,7 +146,6 @@ const Layout = ({ location, title, children }) => {
                     className="text-left "
                     to={`${node.fields.slug}`}
                     key={node.fields.slug}
-                    p
                   >
                     {title}
                   </Link>
