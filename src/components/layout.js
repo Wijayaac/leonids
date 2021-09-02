@@ -1,12 +1,35 @@
 import React from "react"
-import { Link } from "gatsby"
+import { useStaticQuery, graphql, Link } from "gatsby"
 import { ThemeToggler } from "gatsby-plugin-dark-mode"
+
 import { scale } from "../utils/typography"
 
 import Footer from "./footer"
 import "./global.css"
 
 const Layout = ({ location, title, children }) => {
+  const isHome = location.href.length > 22
+  const data = useStaticQuery(graphql`
+    query blogListSidebarQuery {
+      allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
+        edges {
+          node {
+            excerpt
+            fields {
+              slug
+            }
+            frontmatter {
+              date(formatString: "MMMM DD, YYYY")
+              title
+              description
+            }
+          }
+        }
+      }
+    }
+  `)
+  const lists = data.allMarkdownRemark.edges
+
   const toggle = (
     <ThemeToggler>
       {({ toggleTheme, theme }) => {
@@ -79,7 +102,6 @@ const Layout = ({ location, title, children }) => {
       </h2>
     </>
   )
-
   return (
     <div
       style={{
@@ -91,10 +113,31 @@ const Layout = ({ location, title, children }) => {
     >
       <div className="sidebar">
         <div
-          className="md:h-screen p-4 flex flex-col justify-center items-center"
+          className="md:h-screen p-4 flex flex-col justify-center items-left"
           style={{ minHeight: 200 }}
         >
           {header}
+          {isHome &&
+            lists.map(({ node }) => {
+              const title = node.frontmatter.title || node.fields.slug
+              return (
+                <Link
+                  style={{
+                    ...scale(0.4),
+                    marginBottom: 2,
+                    marginTop: 2,
+                    fontFamily: `Montserrat, sans-serif`,
+                    textAlign: "left",
+                  }}
+                  className="text-left "
+                  to={`${node.fields.slug}`}
+                  key={node.fields.slug}
+                  p
+                >
+                  {title}
+                </Link>
+              )
+            })}
         </div>
       </div>
 
