@@ -106,3 +106,8 @@ button {
     top: 0;
   }
 }
+
+/* aIS list items */
+.ais-Hits-list {
+  list-style: none;
+}

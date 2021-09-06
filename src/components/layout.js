@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import { useStaticQuery, graphql, Link } from "gatsby"
 import { ThemeToggler } from "gatsby-plugin-dark-mode"
 
@@ -6,20 +6,19 @@ import { scale } from "../utils/typography"
 
 import Footer from "./footer"
 import "./global.css"
+import Search from "./search"
+const searchIndices = [{ name: `dev_Pages`, title: `dev_Pages` }]
 
 const Layout = ({ location, title, children }) => {
-  let isHome = true
-  if (typeof window !== undefined) {
-    // browser code
-    isHome = location.href > 22
-  }
-  console.log(isHome)
+  let isHome = useRef(0)
+  useEffect(() => {
+    isHome.current = window.location.href.length > 22
+  }, [isHome])
   const data = useStaticQuery(graphql`
     query blogListSidebarQuery {
       allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
         edges {
           node {
-            excerpt
             fields {
               slug
             }
@@ -83,6 +82,61 @@ const Layout = ({ location, title, children }) => {
       }}
     </ThemeToggler>
   )
+  const articleList = (
+    <div className="hidden md:block text-left mt-2 md:mt-4 ">
+      {lists
+        .filter(
+          ({ node }) =>
+            !node.fields.slug
+              .toLowerCase()
+              .includes(location.pathname.toLowerCase())
+        )
+        .map(({ node }) => {
+          const title = node.frontmatter.title || node.fields.slug
+          return (
+            <Link
+              style={{
+                ...scale(0.4),
+                marginBottom: 2,
+                marginTop: 2,
+                fontFamily: `Montserrat, sans-serif`,
+                textAlign: "left",
+                display: "block",
+                textDecoration: "none",
+              }}
+              className="text-left "
+              to={`${node.fields.slug}`}
+              key={node.fields.slug}
+            >
+              <div className="p-1 mb-2">
+                <div className="w-full lg:max-w-full lg:flex">
+                  <div
+                    style={{
+                      backgroundColor: "var(--bg)",
+                      color: "var(--textNormal)",
+                      transition:
+                        "color 0.2s ease-out, background 0.2s ease-out",
+                    }}
+                    className="border-r border-b border-l  rounded-b lg:rounded-b-none lg:rounded-r p-2 flex flex-col justify-between leading-normal"
+                  >
+                    <div className="mb-1">
+                      <div className=" font-bold text-xl mb-1">{title}</div>
+                      <p className=" text-base">
+                        {node.frontmatter.description}
+                      </p>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <p className=" mx-1">{node.frontmatter.date}</p>
+                      <p className="">Ardian </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )
+        })}
+    </div>
+  )
 
   const header = (
     <>
@@ -107,6 +161,7 @@ const Layout = ({ location, title, children }) => {
       </h2>
     </>
   )
+
   return (
     <div
       style={{
@@ -118,39 +173,12 @@ const Layout = ({ location, title, children }) => {
     >
       <div className="sidebar">
         <div
-          className="md:h-screen p-4 flex flex-col justify-center items-left"
+          className="md:h-screen p-4 flex flex-col justify-start items-left"
           style={{ minHeight: 200 }}
         >
+          <Search indices={searchIndices} />
           {header}
-          {!isHome &&
-            lists
-              .filter(({ node }) => {
-                if (
-                  !node.fields.slug
-                    .toLowerCase()
-                    .includes(location.pathname.toLowerCase())
-                )
-                  return node
-              })
-              .map(({ node }) => {
-                const title = node.frontmatter.title || node.fields.slug
-                return (
-                  <Link
-                    style={{
-                      ...scale(0.4),
-                      marginBottom: 2,
-                      marginTop: 2,
-                      fontFamily: `Montserrat, sans-serif`,
-                      textAlign: "left",
-                    }}
-                    className="text-left "
-                    to={`${node.fields.slug}`}
-                    key={node.fields.slug}
-                  >
-                    {title}
-                  </Link>
-                )
-              })}
+          {!isHome.current && articleList}
         </div>
       </div>
 
